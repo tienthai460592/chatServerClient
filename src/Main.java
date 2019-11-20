@@ -1,7 +1,6 @@
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
+import java.util.Scanner;
 
 public class Main {
 
@@ -10,7 +9,12 @@ public class Main {
     }
 
     public static void run(){
-        Socket socket = new Socket("localhost://", 13398);
+        Socket socket = null;
+        try {
+            socket = new Socket("127.0.0.1", 13398);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         try {
             InputStream inputStream = socket.getInputStream();
         } catch (IOException e) {
@@ -21,5 +25,9 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter username");
+        String userName = scanner.nextLine();
     }
 }
