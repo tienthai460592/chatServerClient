@@ -16,5 +16,6 @@
     </orderEntry>
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="inheritedJdk" />
+    <orderEntry type="library" name="com.typesafe.akka:akka-actor_2.12:2.5.23" level="project" />
   </component>
 </module>
