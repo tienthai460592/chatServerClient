@@ -3,9 +3,11 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class Main {
-    boolean running = true;
-    PongThread pongThread = new PongThread();
-    Thread thread = new Thread(pongThread);
+    private boolean running = true;
+    private Socket socket;
+    private InputStream inputStream;
+    private BufferedReader reader;
+    private PrintWriter writer;
 
 
 
@@ -15,33 +17,32 @@ public class Main {
 
     public void run(){
 
-        Socket socket = null;
-
         try {
             socket = new Socket("127.0.0.1", 1337);
         } catch (IOException e) {
             e.printStackTrace();
         }
         try {
-//            thread.start();
-//            thread.join();
 
-            InputStream inputStream = socket.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            inputStream = socket.getInputStream();
+            reader = new BufferedReader(new InputStreamReader(inputStream));
 
             Scanner sc = new Scanner(System.in);
-            System.out.println("Input username:");
+            System.out.print("Input username: ");
             String username = sc.nextLine();
 
             OutputStream outputStream = socket.getOutputStream();
 
-            PrintWriter writer = new PrintWriter(outputStream);
+            writer = new PrintWriter(outputStream);
             writer.println("HELO "+username);
-
             writer.flush();
 
+            PongThread pongThread = new PongThread();
+            Thread thread = new Thread(pongThread);
+            thread.start();
+            Scanner scanner = new Scanner(System.in);
+
             while (running){
-                Scanner scanner = new Scanner(System.in);
                 System.out.println("Your message: (log out to quit)");
                 String ms = scanner.nextLine();
 
@@ -57,16 +58,32 @@ public class Main {
 
                 String line = reader.readLine();
 
-                if (line.equals("PING")) {
-                    writer.println("PONG");
-                    writer.flush();
-                }
-
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+    }
+
+    public class PongThread implements Runnable {
+
+        @Override
+        public void run() {
+
+            try {
+                while (running) {
+
+                    String line = reader.readLine();
+
+                    if (line.equals("PING")) {
+                        writer.println("PONG");
+                        writer.flush();
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
