@@ -5,7 +5,6 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/chatServerClient/Main.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/chatServerClient/Main.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/PongThread.java" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -72,7 +71,7 @@
       <updated>1574265946361</updated>
       <workItem from="1574265947537" duration="1648000" />
       <workItem from="1574346454307" duration="4071000" />
-      <workItem from="1574525359396" duration="2918000" />
+      <workItem from="1574525359396" duration="4477000" />
     </task>
     <task id="LOCAL-00001" summary="a">
       <created>1574415903929</created>
@@ -81,7 +80,14 @@
       <option name="project" value="LOCAL" />
       <updated>1574415903929</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="ping pong thing">
+      <created>1574528346993</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1574528346993</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -102,6 +108,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="a" />
-    <option name="LAST_COMMIT_MESSAGE" value="a" />
+    <MESSAGE value="ping pong thing" />
+    <option name="LAST_COMMIT_MESSAGE" value="ping pong thing" />
   </component>
 </project>

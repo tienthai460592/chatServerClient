@@ -5,9 +5,6 @@ import java.util.Scanner;
 public class Main {
     private boolean running = true;
     private Socket socket;
-    private InputStream inputStream;
-    private BufferedReader reader;
-    private PrintWriter writer;
 
 
 
@@ -24,16 +21,13 @@ public class Main {
         }
         try {
 
-            inputStream = socket.getInputStream();
-            reader = new BufferedReader(new InputStreamReader(inputStream));
+            OutputStream outputStream = socket.getOutputStream();
+            PrintWriter writer = new PrintWriter(outputStream);
 
             Scanner sc = new Scanner(System.in);
             System.out.print("Input username: ");
             String username = sc.nextLine();
 
-            OutputStream outputStream = socket.getOutputStream();
-
-            writer = new PrintWriter(outputStream);
             writer.println("HELO "+username);
             writer.flush();
 
@@ -53,11 +47,7 @@ public class Main {
                 }else {
                     writer.println("BCST "+ms);
                     writer.flush();
-
                 }
-
-                String line = reader.readLine();
-
             }
 
         } catch (Exception e) {
@@ -72,6 +62,11 @@ public class Main {
         public void run() {
 
             try {
+                InputStream inputStream = socket.getInputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                OutputStream outputStream = socket.getOutputStream();
+                PrintWriter writer = new PrintWriter(outputStream);
+
                 while (running) {
 
                     String line = reader.readLine();
