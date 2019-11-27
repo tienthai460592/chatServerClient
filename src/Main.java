@@ -5,8 +5,7 @@ import java.util.Scanner;
 public class Main {
     private boolean running = true;
     private Socket socket;
-
-
+    
 
     public static void main(String[] args) {
         new Main().run();
@@ -36,8 +35,8 @@ public class Main {
             thread.start();
             Scanner scanner = new Scanner(System.in);
 
-            while (running){
-                System.out.println("Your message: (log out to quit)");
+            while (running) {
+//                System.out.println("Your message: (log out to quit)");
                 String ms = scanner.nextLine();
 
                 if(ms.equals("log out")){
@@ -74,6 +73,12 @@ public class Main {
                     if (line.equals("PING")) {
                         writer.println("PONG");
                         writer.flush();
+                    } else {
+                        System.out.println(line);
+                        if (!line.equals("HELO Welkom to WhatsUpp!")) {
+                            System.out.println("Your message: (log out to quit)");
+                        }
+
                     }
                 }
             } catch (IOException e) {
