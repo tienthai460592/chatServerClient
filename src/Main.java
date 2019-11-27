@@ -71,6 +71,7 @@ public class Main {
                     String line = reader.readLine();
 
                     if (line.equals("PING")) {
+
                         writer.println("PONG");
                         writer.flush();
                     } else {
