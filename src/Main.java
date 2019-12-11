@@ -5,7 +5,8 @@ import java.util.Scanner;
 public class Main {
     private boolean running = true;
     private Socket socket;
-    
+    private PrintWriter writer;
+
 
     public static void main(String[] args) {
         new Main().run();
@@ -22,7 +23,7 @@ public class Main {
 
 
             OutputStream outputStream = socket.getOutputStream();
-            PrintWriter writer = new PrintWriter(outputStream);
+            writer = new PrintWriter(outputStream);
 
             Scanner sc = new Scanner(System.in);
             System.out.print("Input username: ");
@@ -53,7 +54,11 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
+    public void sendMessageToServer(ClientMessage cm) {
+        writer.println(cm);
+        writer.flush();
     }
 
     public class PongThread implements Runnable {
@@ -64,17 +69,14 @@ public class Main {
             try {
                 InputStream inputStream = socket.getInputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-                OutputStream outputStream = socket.getOutputStream();
-                PrintWriter writer = new PrintWriter(outputStream);
 
                 while (running) {
 
                     String line = reader.readLine();
-
-                    if (line.equals("PING")) {
-
-                        writer.println("PONG");
-                        writer.flush();
+                    ServerMessage sm = new ServerMessage(line);
+                    if (sm.isPing()) {
+                        sendMessageToServer(new PongClientMessage());
+                        sendMessageToServer(new BroadcastClientMessage("Hi there"));
                     } else {
                         System.out.println(line);
                         if (!line.equals("HELO Welkom to WhatsUpp!")) {
@@ -88,4 +90,42 @@ public class Main {
             }
         }
     }
+
+    public class ServerMessage {
+        private String line;
+
+        public ServerMessage(String line) {
+            this.line = line;
+        }
+
+        public boolean isPing() {
+            return line.equals("PING");
+        }
+
+    }
+
+    public class ClientMessage {
+
+    }
+
+    public class PongClientMessage extends ClientMessage {
+        @Override
+        public String toString() {
+            return "PONG";
+        }
+    }
+
+    public class BroadcastClientMessage extends ClientMessage {
+        private String message;
+
+        public BroadcastClientMessage(String message) {
+            this.message = message;
+        }
+
+        @Override
+        public String toString() {
+            return "BCST " + message;
+        }
+    }
+
 }
