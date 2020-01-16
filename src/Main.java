@@ -5,7 +5,11 @@ import java.util.Scanner;
 public class Main {
     private boolean running = true;
     private Socket socket;
+    private Scanner sc = new Scanner(System.in);
+    private OutputStream outputStream;
     private PrintWriter writer;
+    private InputStream inputStream;
+    private BufferedReader reader;
 
 
     public static void main(String[] args) {
@@ -13,70 +17,87 @@ public class Main {
     }
 
     public void run(){
-
         try {
+
             socket = new Socket("127.0.0.1", 1337);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        try {
 
-
-            OutputStream outputStream = socket.getOutputStream();
+            outputStream = socket.getOutputStream();
             writer = new PrintWriter(outputStream);
 
-            Scanner sc = new Scanner(System.in);
-            System.out.print("Input username: ");
-            String username = sc.nextLine();
+            inputStream = socket.getInputStream();
+            reader = new BufferedReader(new InputStreamReader(inputStream));
 
-            writer.println("HELO "+username);
-            writer.flush();
 
-            PongThread pongThread = new PongThread();
-            Thread thread = new Thread(pongThread);
-            thread.start();
-            Scanner scanner = new Scanner(System.in);
+            String line = reader.readLine();
+            if (line.startsWith("HELO")) {
+                System.out.println(line);
 
-            while (running) {
-//                System.out.println("Your message: (log out to quit)");
-                String ms = scanner.nextLine();
+                sendUsername();
 
-                if(ms.equals("log out")){
-                    writer.println("QUIT");
-                    writer.flush();
-                    running = false;
-                }else {
-                    writer.println("BCST "+ms);
-                    writer.flush();
+                line = reader.readLine();
+
+                while (!line.startsWith("+OK HELO")) {
+                    System.out.println(line);
+                    sendUsername();
+                    line = reader.readLine();
+                }
+
+                if (line.startsWith("+OK HELO")) {
+                    System.out.println(line);
+                    PongThread pongThread = new PongThread();
+                    Thread thread = new Thread(pongThread);
+                    thread.start();
+
+                    while (running) {
+                        System.out.println("Your message: (log out to quit)");
+                        String ms = sc.nextLine();
+
+                        if(ms.equals("log out")){
+                            writer.println("QUIT");
+                            writer.flush();
+                            running = false;
+                        }else {
+                            writer.println(ms);
+                            writer.flush();
+                        }
+                    }
                 }
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 
-    public void sendMessageToServer(ClientMessage cm) {
-        writer.println(cm);
+    private void sendUsername() {
+        System.out.print("Input username: ");
+        String username = sc.nextLine();
+
+        writer.println("HELO " + username);
         writer.flush();
     }
+
+
 
     public class PongThread implements Runnable {
 
         @Override
         public void run() {
-
             try {
                 InputStream inputStream = socket.getInputStream();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+                OutputStream outputStream = socket.getOutputStream();
+                PrintWriter writer = new PrintWriter(outputStream);
 
                 while (running) {
 
                     String line = reader.readLine();
-                    ServerMessage sm = new ServerMessage(line);
-                    if (sm.isPing()) {
-                        sendMessageToServer(new PongClientMessage());
-                        sendMessageToServer(new BroadcastClientMessage("Hi there"));
+
+                    if (line.equals("PING")) {
+
+                        writer.println("PONG");
+                        writer.flush();
                     } else {
                         System.out.println(line);
                         if (!line.equals("HELO Welkom to WhatsUpp!")) {
@@ -90,42 +111,4 @@ public class Main {
             }
         }
     }
-
-    public class ServerMessage {
-        private String line;
-
-        public ServerMessage(String line) {
-            this.line = line;
-        }
-
-        public boolean isPing() {
-            return line.equals("PING");
-        }
-
-    }
-
-    public class ClientMessage {
-
-    }
-
-    public class PongClientMessage extends ClientMessage {
-        @Override
-        public String toString() {
-            return "PONG";
-        }
-    }
-
-    public class BroadcastClientMessage extends ClientMessage {
-        private String message;
-
-        public BroadcastClientMessage(String message) {
-            this.message = message;
-        }
-
-        @Override
-        public String toString() {
-            return "BCST " + message;
-        }
-    }
-
 }
