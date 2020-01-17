@@ -2,11 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5e3f1563-4339-4432-b92c-2f71f3f71c6f" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/ClientThread.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/chatServerClient/Main$PongThread.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/chatServerClient/Main$PongThread.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/chatServerClient/Main.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/chatServerClient/Main.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/chatServerClient/Server.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/chatServerClient/Server.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/ClientThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/ClientThread.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Server.java" afterDir="false" />
     </list>
@@ -63,7 +63,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.Server">
+  <component name="RunManager" selected="Application.Main">
     <configuration name="Main" type="Application" factoryName="Application" singleton="false" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="Main" />
       <module name="chatServerClient" />
@@ -121,6 +121,7 @@
       <workItem from="1578563591713" duration="1014000" />
       <workItem from="1578588358716" duration="2517000" />
       <workItem from="1579097080614" duration="24731000" />
+      <workItem from="1579171415236" duration="19415000" />
     </task>
     <task id="LOCAL-00001" summary="a">
       <created>1574415903929</created>
@@ -143,17 +144,15 @@
       <option name="project" value="LOCAL" />
       <updated>1575473217034</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="layer 2 get users and private message">
+      <created>1579171600112</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1579171600113</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
-  </component>
-  <component name="TodoView">
-    <todo-panel id="selected-file">
-      <is-autoscroll-to-source value="true" />
-    </todo-panel>
-    <todo-panel id="all">
-      <are-packages-shown value="true" />
-      <is-autoscroll-to-source value="true" />
-    </todo-panel>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
@@ -189,6 +188,7 @@
     <MESSAGE value="a" />
     <MESSAGE value="ping pong thing" />
     <MESSAGE value="Level 2 start code" />
-    <option name="LAST_COMMIT_MESSAGE" value="Level 2 start code" />
+    <MESSAGE value="layer 2 get users and private message" />
+    <option name="LAST_COMMIT_MESSAGE" value="layer 2 get users and private message" />
   </component>
 </project>

@@ -48,8 +48,10 @@ public class Main {
                     Thread thread = new Thread(pongThread);
                     thread.start();
 
+                    System.out.println("Your message: (log out to quit)");
+
                     while (running) {
-                        System.out.println("Your message: (log out to quit)");
+
                         String ms = sc.nextLine();
 
                         if(ms.equals("log out")){

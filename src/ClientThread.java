@@ -1,5 +1,8 @@
+import jdk.swing.interop.SwingInterOpUtils;
+
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,10 +13,11 @@ public class ClientThread extends Thread{
     private Socket socket;
     private Server server;
     private boolean running = true;
-    private OutputStream outputStream;
     private PrintWriter writer;
-    private InputStream inputStream;
+    private ClientThread thisOne = this;
     private BufferedReader reader;
+    private PingThread pingThread;
+    private boolean pong;
 
     public ClientThread(Socket socket, Server server) {
         this.socket = socket;
@@ -23,35 +27,44 @@ public class ClientThread extends Thread{
     @Override
     public void run() {
         try {
-            outputStream = socket.getOutputStream();
+            OutputStream outputStream = socket.getOutputStream();
             writer = new PrintWriter(outputStream);
-            inputStream = socket.getInputStream();
+            InputStream inputStream = socket.getInputStream();
             reader = new BufferedReader(new InputStreamReader(inputStream));
 
             write("HELO Welcome", "<");
 
             ClientServerProcessor clientServerProcessor = new ClientServerProcessor();
-            clientServerProcessor.run();
+            clientServerProcessor.start();
+
+            pingThread = new PingThread();
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void receiveBroadcast(String line, String from) {
+    public void receiveBroadcast(String line) {
 
-        write("[" + from + "] " + line, ">");
+        write(line, ">");
 
     }
 
-    public void receiveMessage(String line, String from) {
-        write("[" + from + "] [private message] " + line, ">");
+    public void receiveMessage(String line) {
+        if (line.startsWith("<")) {
+            write(line.substring(1), "<");
+        } else write(line, ">");
     }
 
-    public class ClientServerProcessor implements Runnable {
+    public void receiveGroupMessage(String line) {
+        write(line, ">");
+    }
+
+    public class ClientServerProcessor extends Thread {
 
         public void run() {
             setUsername();
+            pingThread.start();
             while (running) {
                 try {
                     while (running) {
@@ -79,6 +92,79 @@ public class ClientThread extends Thread{
                                 write("+OK " + line, "<");
                                 server.message(message, to, username);
                             }
+                        } else if (line.startsWith("CREATE GROUP ")) {
+                            String name = line.substring(13);
+
+                            String regex = "^[a-zA-Z0-9_]+$";
+                            Pattern pattern = Pattern.compile(regex);
+                            Matcher matcher = pattern.matcher(name);
+
+                            if (!matcher.matches()) {
+                                printErr("Name contains illegal characters");
+                            } else if (server.getGroupMembers(name) == null) {
+                                server.createGroup(name, thisOne);
+                                write("+OK group " + name + " created", "<");
+                            } else {
+                                printErr("Group already exists");
+                            }
+                        } else if(line.equals("GET GROUPS")) {
+                            write("+OK Groups: [" + server.getGroups() + "]", "<");
+                        } else if (line.startsWith("JOIN ")) {
+                            String groupName = line.substring(5);
+                            ArrayList group = server.getGroupMembers(groupName);
+
+                            if (group != null && !server.isMember(groupName, username)) {
+                                server.joinGroup(groupName, thisOne);
+                                write("+OK group " + groupName + " joined", "<");
+                            } else if (group != null && server.isMember(groupName, username)) {
+                                printErr("Already a member");
+                            } else  {
+                                printErr("Group doesn't exist");
+                            }
+                        } else if (line.startsWith("GMSG /")) {
+                            StringTokenizer tokens = new StringTokenizer(line, " ");
+                            tokens.nextToken();
+                            String to = tokens.nextToken().substring(1);
+
+                            if (server.getGroupMembers(to) != null && server.isMember(to, username)) {
+                                String message = line.substring(7 + to.length());
+                                server.messageGroup(message, to, username);
+                                write("+OK " + line, "<");
+                            } else {
+                                printErr("Not member of group");
+                            }
+                        } else if (line.startsWith("LEAVE ")) {
+                            String name = line.substring(6);
+
+                            if (server.getGroups().contains(name) && server.isMember(name, username)) {
+                                server.leaveGroup(name, username);
+                                write("+OK you left " + name, "<");
+                            } else {
+                                printErr("Not member of group");
+                            }
+                        } else if (line.startsWith("KICK /")) {
+                            StringTokenizer tokens = new StringTokenizer(line, " ");
+                            tokens.nextToken();
+                            String group = tokens.nextToken().substring(1);
+
+                            String user = line.substring(7 + group.length());
+
+                            if (server.getGroups().contains(group) && server.isAdmin(group, username)) {
+                                if (user.equals(username)) {
+                                    printErr("Why would you try to kick yourself");
+                                } else if (server.isMember(group, user)) {
+                                    write("+OK " + user + " kicked from " + group, "<");
+                                    server.kickMember(group, user);
+                                } else printErr("No such member in group");
+                            } else {
+                                printErr("Not admin of group");
+                            }
+                        } else if(line.equals("QUIT")) {
+                            running = false;
+                        } else if (line.equals("PONG"))  {
+                            pong = true;
+                        } else {
+                            write("Command not recognised", "<");
                         }
                     }
                 } catch (IOException e) {
@@ -90,7 +176,6 @@ public class ClientThread extends Thread{
         private void setUsername() {
             try {
                 String clientMessage = reader.readLine();
-                //write(clientMessage, ">");
                 if (clientMessage.startsWith("HELO ")) {
                     System.out.println(">> " + clientMessage);
                     String name = clientMessage.substring(5);
@@ -104,9 +189,10 @@ public class ClientThread extends Thread{
                         setUsername();
                     } else if (server.getClient(name) != null) {
                         printErr("Username already exists");
+                        setUsername();
                     } else {
-                        write("+OK HELO " + name, "<");
                         username = name;
+                        write("+OK HELO " + name, "<");
                     }
                 }
             } catch (IOException e) {
@@ -115,17 +201,34 @@ public class ClientThread extends Thread{
         }
     }
 
-    private void printErr(String message) {
+    private class PingThread extends Thread {
 
+        public void run() {
+            while (running) {
+                pong = false;
+                try {
+                    write("PING", "<");
+
+                    Thread.sleep(3000);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                if (!pong) {
+                    write("Client inactive, disconecting", "<");
+                    running = false;
+                }
+            }
+        }
+    }
+
+    private void printErr(String message) {
         write("NOT OK " + message, "<");
-//        System.out.println("<< NOT OK" + message);
-//        writer.println("NOT OK " + message);
-//        writer.flush();
     }
 
     private void write(String message, String direction) {
         if(direction.equals("<")) {
-            System.out.println("<< " + message);
+            System.out.println("[" + username + "] << " + message);
         } else {
             System.out.println(">> " + message);
         }
