@@ -1,8 +1,12 @@
 import jdk.swing.interop.SwingInterOpUtils;
 
+import javax.crypto.Cipher;
 import java.io.*;
 import java.net.Socket;
+import java.security.*;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,6 +22,9 @@ public class ClientThread extends Thread{
     private BufferedReader reader;
     private PingThread pingThread;
     private boolean pong;
+    private PrivateKey privateKey;
+    private PublicKey publicKey;
+    private Cipher cipher;
 
     public ClientThread(Socket socket, Server server) {
         this.socket = socket;
@@ -27,6 +34,25 @@ public class ClientThread extends Thread{
     @Override
     public void run() {
         try {
+
+            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+            keyPairGenerator.initialize(2048);
+            KeyPair keyPair = keyPairGenerator.generateKeyPair();
+            privateKey = keyPair.getPrivate();
+            publicKey = keyPair.getPublic();
+
+//            cipher = Cipher.getInstance("RSA");
+//            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+//            String a = "aa";
+//            a = Base64.getEncoder().encodeToString(cipher.doFinal(a.getBytes()));
+//
+//            System.out.println(a);
+//
+//            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+//            a = new String(cipher.doFinal(Base64.getDecoder().decode(a)));
+
+//            System.out.println(a);
+
             OutputStream outputStream = socket.getOutputStream();
             writer = new PrintWriter(outputStream);
             InputStream inputStream = socket.getInputStream();
@@ -39,7 +65,7 @@ public class ClientThread extends Thread{
 
             pingThread = new PingThread();
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -50,10 +76,24 @@ public class ClientThread extends Thread{
 
     }
 
-    public void receiveMessage(String line) {
-        if (line.startsWith("<")) {
-            write(line.substring(1), "<");
-        } else write(line, ">");
+    public void receiveMessage(String line, String from) {
+
+        try {
+
+            cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+            line = new String(cipher.doFinal(Base64.getDecoder().decode(line)));
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        write("[" + from + "] [private message] " + line, "<");
+    }
+
+    public void groupNotify(String message) {
+        write(message, "<");
     }
 
     public void receiveGroupMessage(String line) {
@@ -85,11 +125,18 @@ public class ClientThread extends Thread{
 
                             String to = tokens.nextToken().substring(1);
 
-                            if (server.getClient(to) == null || to.equals("")) {
+                            PublicKey targetKey = server.findPublicKey(to);
+
+                            if (targetKey == null) {
                                 printErr("User doesn't exist");
                             } else {
                                 String message = line.substring(5 + to.length());
                                 write("+OK " + line, "<");
+
+                                cipher = Cipher.getInstance("RSA");
+                                cipher.init(Cipher.ENCRYPT_MODE, targetKey);
+                                message = Base64.getEncoder().encodeToString(cipher.doFinal(message.getBytes()));
+
                                 server.message(message, to, username);
                             }
                         } else if (line.startsWith("CREATE GROUP ")) {
@@ -167,7 +214,7 @@ public class ClientThread extends Thread{
                             write("Command not recognised", "<");
                         }
                     }
-                } catch (IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
@@ -236,6 +283,9 @@ public class ClientThread extends Thread{
         writer.flush();
     }
 
+    public PublicKey getPublicKey() {
+        return publicKey;
+    }
 
     public String getUsername() {
      return username;

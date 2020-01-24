@@ -3,6 +3,7 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -34,6 +35,15 @@ public class Server {
         }
     }
 
+    public synchronized PublicKey findPublicKey(String username) {
+        ClientThread client = getClient(username);
+        if (client != null) {
+            System.out.println(client.getUsername());
+            return client.getPublicKey();
+        }
+        return null;
+    }
+
     public void createGroup(String name, ClientThread clientThread) {
         groups.put(name, new ArrayList<>());
         groups.get(name).add(clientThread);
@@ -56,7 +66,7 @@ public class Server {
             groups.remove(groupName);
         } else {
             if (isAdmin(groupName, username)) {
-                clientThreads.get(1).receiveMessage("<" + username + " left " + groupName + ", now you are admin. Congrats.");
+                clientThreads.get(1).groupNotify("<" + username + " left " + groupName + ", now you are admin. Congrats.");
             }
 
             for (int i = 0; i < clientThreads.size(); i++) {
@@ -72,10 +82,10 @@ public class Server {
         ClientThread user = getClient(userName);
 
         groups.get(groupName).remove(user);
-        user.receiveMessage("<You were kicked from " + groupName);
-    }
+        user.groupNotify("You were kicked from " + groupName);
+}
 
-    public ClientThread getClient(String username) {
+    public synchronized ClientThread getClient(String username) {
         for(ClientThread clientThread: clients) {
             if (username.equals(clientThread.getUsername())) {
                 return clientThread;
@@ -84,7 +94,7 @@ public class Server {
         return null;
     }
 
-    public ArrayList<ClientThread> getGroupMembers(String name) {
+    public synchronized ArrayList<ClientThread> getGroupMembers(String name) {
         try {
             return groups.get(name);
         } catch (Exception e) {
@@ -92,7 +102,7 @@ public class Server {
         }
     }
 
-    public boolean isMember(String groupName, String userName) {
+    public synchronized boolean isMember(String groupName, String userName) {
         ArrayList<ClientThread> group = getGroupMembers(groupName);
         for(ClientThread clientThread: group) {
             if (clientThread.getUsername().equals(userName)) {
@@ -102,14 +112,14 @@ public class Server {
         return false;
     }
 
-    public boolean isAdmin(String groupname, String username) {
+    public synchronized boolean isAdmin(String groupname, String username) {
         if(getGroupMembers(groupname).get(0).getUsername().equals(username)) {
             return true;
         }
         return false;
     }
 
-    public String getGroups() {
+    public synchronized String getGroups() {
         StringBuilder response = new StringBuilder();
 
         Object[] keys = groups.keySet().toArray();
@@ -121,14 +131,13 @@ public class Server {
         response.append(keys[0]);
 
         for (int i = 1; i < keys.length; i++) {
-            System.out.println("fuck");
             response.append(", ").append(keys[i]);
         }
 
         return response.toString();
     }
 
-    public String getClients(String from) {
+    public synchronized String getClients(String from) {
         StringBuilder response = new StringBuilder();
         boolean comma = true;
 
@@ -149,7 +158,7 @@ public class Server {
         return response.toString();
     }
 
-    public void broadcast(String message, String from) {
+    public synchronized void broadcast(String message, String from) {
         for(ClientThread client: clients) {
             if (!from.equals(client.getUsername())) {
                 client.receiveBroadcast("[" + from + "]" + message);
@@ -157,11 +166,11 @@ public class Server {
         }
     }
 
-    public void message(String message, String to, String from) {
-        getClient(to).receiveMessage("[" + from + "] [private message] " + message);
+    public synchronized void message(String message, String to, String from) {
+        getClient(to).receiveMessage(message, from);
     }
 
-    public void messageGroup(String message, String to, String from) {
+    public synchronized void messageGroup(String message, String to, String from) {
         ArrayList<ClientThread> clients = getGroupMembers(to);
 
         for (ClientThread clientThread: clients) {

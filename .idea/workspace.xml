@@ -63,7 +63,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.Main">
+  <component name="RunManager" selected="Application.encryption">
     <configuration name="Main" type="Application" factoryName="Application" singleton="false" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="Main" />
       <module name="chatServerClient" />
@@ -78,14 +78,23 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <configuration name="encryption" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="encryption" />
+      <module name="chatServerClient" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <list>
       <item itemvalue="Application.Main" />
       <item itemvalue="Application.Server" />
+      <item itemvalue="Application.encryption" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Application.Main" />
         <item itemvalue="Application.Server" />
+        <item itemvalue="Application.encryption" />
       </list>
     </recent_temporary>
   </component>
@@ -121,7 +130,9 @@
       <workItem from="1578563591713" duration="1014000" />
       <workItem from="1578588358716" duration="2517000" />
       <workItem from="1579097080614" duration="24731000" />
-      <workItem from="1579171415236" duration="19415000" />
+      <workItem from="1579171415236" duration="21566000" />
+      <workItem from="1579704848112" duration="5937000" />
+      <workItem from="1579820804265" duration="3817000" />
     </task>
     <task id="LOCAL-00001" summary="a">
       <created>1574415903929</created>
@@ -151,7 +162,14 @@
       <option name="project" value="LOCAL" />
       <updated>1579171600113</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="layer 2 get users and private message">
+      <created>1579264778478</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1579264778479</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

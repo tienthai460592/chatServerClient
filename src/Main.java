@@ -1,16 +1,18 @@
 import java.io.*;
 import java.net.Socket;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class Main {
     private boolean running = true;
     private Socket socket;
     private Scanner sc = new Scanner(System.in);
-    private OutputStream outputStream;
     private PrintWriter writer;
-    private InputStream inputStream;
-    private BufferedReader reader;
-
 
     public static void main(String[] args) {
         new Main().run();
@@ -18,14 +20,13 @@ public class Main {
 
     public void run(){
         try {
-
             socket = new Socket("127.0.0.1", 1337);
 
-            outputStream = socket.getOutputStream();
+            OutputStream outputStream = socket.getOutputStream();
             writer = new PrintWriter(outputStream);
 
-            inputStream = socket.getInputStream();
-            reader = new BufferedReader(new InputStreamReader(inputStream));
+            InputStream inputStream = socket.getInputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
 
 
             String line = reader.readLine();
